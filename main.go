@@ -18,16 +18,24 @@ import (
 	//"encoding/json"
 )
 
+/*
+Type of struct needed for parsing useful data. "Key" value is ID of work(book).
+AuthorsKeys gets slice of ID values for later searching of those authors again.
+AuthorsNames are literal names in string format.
+Index [0] in AuthorsKeys and AuthorsNames shows data forthe same person.
+*/
 type KeysSearch struct {
 	Key          string   `json:"key"`
 	AuthorsKeys  []string `json:"author_key"`
 	AuthorsNames []string `json:"author_name"`
 }
 
+// API response consist of syntax { "docs":[{"key": "XYZ"}]}. Thus its necessary to assign "docs" as slice.
 type Docs struct {
 	Results []KeysSearch `json:"docs"`
 }
 
+// Gives bool value for checking if there is exact match of user input and books in database.
 type ExactMatch struct {
 	ExctMtch bool `json:"numFoundExact"`
 }
