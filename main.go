@@ -109,7 +109,7 @@ func worksbyauthors(dt KeysSearch) {
 	var http_query string
 	allWorks := []Works{}
 	for i, element := range dt.AuthorsKeys {
-		http_query = "https://openlibrary.org/authors/" + element + "/works.json?limit=50"
+		http_query = "https://openlibrary.org/authors/" + element + "/works.json?limit=200"
 		//	fmt.Println("http_query :", http_query)
 		response, err := http.Get(http_query)
 
@@ -156,7 +156,8 @@ func worksbyauthors(dt KeysSearch) {
 	if err != nil {
 		fmt.Printf("Error while creating YAML. %v", err)
 	}
-	fmt.Println(string(yamlData))
+	//fmt.Println(string(yamlData))
+	os.Stdout.Write(yamlData)
 
 	//fmt.Println("allWorks: ", allWorks)
 }
