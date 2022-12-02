@@ -10,18 +10,21 @@ Names of authors have to be part of output.
 
 /*for installation of yaml package:
 if you are in your default GOPATH then use "go mod init"
-else use "go mod init <module_name_of_your_choice>"
+else use "go mod init <name>"
 then use "go mod tidy"
 type in terminal "go get gopkg.in/yaml.v3/" */
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -52,11 +55,47 @@ type ExactMatch struct {
 func main() {
 	var introCli []string = []string{"This is LibraryGo created by Radoslav Serstuk.",
 		"For help type '-help'",
-		"To search authors of the book type '-search <name of the book>'"}
+		"To search authors of the book type '-search <name of the book>'",
+		""}
 	for _, element := range introCli {
 		fmt.Printf("%s  \n", element)
 	}
-	response, err := http.Get("https://openlibrary.org/search.json?q=has_fulltext:true%20AND%20title:the%20lord%20of%20the%20rings&fields=key,author_key,author_name,availability&limit=1")
+
+	limit := "200"
+	var input string
+	startSearch, _ := regexp.Compile("^-search .*")
+	helpinfo, _ := regexp.Compile("^-help.*")
+	setlimit, _ := regexp.Compile(`^-limit \d`)
+	for {
+		scanner := bufio.NewScanner(os.Stdin)
+		fmt.Println("Waiting for input: ")
+		scanner.Scan()
+		input = scanner.Text()
+		if startSearch.MatchString(input) {
+			input = strings.TrimSpace(input[7:])
+			input = strings.ReplaceAll(input, " ", "%20")
+			break
+		}
+		if helpinfo.MatchString(input) {
+			fmt.Println("Supported commands are -limit, -search, -help.")
+			fmt.Println("To reduce number of displayed works for every author write command -limit <number> i.e. -limit 10, default value is 200.")
+			fmt.Println("In command -search <book> , the book value is not case sensitive.")
+			fmt.Println("Example of usage: -search the lord of the rings")
+			fmt.Println("Authors and book titles are ordered by ascending value, revision number is in descending order.")
+			fmt.Println("Results are shown in YAML.")
+		}
+		if setlimit.MatchString(input) {
+			limit = strings.TrimSpace(input[7:])
+			fmt.Println("Setting new limit for works: ", limit)
+		}
+
+	}
+	fmt.Println(input)
+
+	//search_query := "https://openlibrary.org/search.json?q=has_fulltext:true%20AND%20title:the%20lord%20of%20the%20rings&fields=key,author_key,author_name,availability&limit=1"
+	search_query := "https://openlibrary.org/search.json?q=has_fulltext:true%20AND%20title:" + input + "&fields=key,author_key,author_name,availability&limit=1"
+	fmt.Println(search_query)
+	response, err := http.Get(search_query)
 
 	if err != nil {
 		fmt.Print(err.Error())
@@ -82,7 +121,7 @@ func main() {
 
 	//var worksPerAuthor []string
 	//worksPerAuthor = worksbyauthors(worksSearch.Results[0])
-	worksbyauthors(worksSearch.Results[0])
+	worksbyauthors(worksSearch.Results[0], limit)
 }
 
 type Entries struct {
@@ -105,11 +144,12 @@ type Works struct {
 
 For every Authorkey there is created a list of works consisting of its names and revision count.
 */
-func worksbyauthors(dt KeysSearch) {
+func worksbyauthors(dt KeysSearch, limit string) {
 	var http_query string
 	allWorks := []Works{}
+
 	for i, element := range dt.AuthorsKeys {
-		http_query = "https://openlibrary.org/authors/" + element + "/works.json?limit=200"
+		http_query = "https://openlibrary.org/authors/" + element + "/works.json?limit=" + limit
 		//	fmt.Println("http_query :", http_query)
 		response, err := http.Get(http_query)
 
