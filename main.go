@@ -1,6 +1,6 @@
 package main
 
-/*
+/* TASK:
 1. Create simple cli application for finding all works from authors of specific book
 2. Application has to find all authors for book and it will print list of all their works
 3. Create list of works for each author (name, revision)
@@ -47,16 +47,29 @@ type Docs struct {
 	Results []KeysSearch `json:"docs"`
 }
 
-// Gives bool value for checking if there is exact match of user input and books in database.
+// Gives number of matches for checking if there is exact match of user input in database.
 type ExactMatch struct {
-	ExctMtch bool `json:"numFoundExact"`
+	ExctMtch int `json:"numFound"`
 }
 
+/*
+	Function creates basic "CLI" with commands "-search,-help-,-limit".
+
+API response is taken and after processing its used in function "worksbyauthors" as argument.
+*/
 func main() {
-	var introCli []string = []string{"This is LibraryGo created by Radoslav Serstuk.",
+	var introCli []string = []string{
+		"  _     _ _                           ____       ",
+		"| |   (_) |__  _ __ __ _ _ __ _   _ / ___| ___  ",
+		"| |   | | '_ \\| '__/ _` | '__| | | | |  _ / _ \\ ",
+		"| |___| | |_) | | | (_| | |  | |_| | |_| | (_) |",
+		"|_____|_|_.__/|_|  \\__,_|_|   \\__, |\\____|\\___/ ",
+		"                               |___/             ",
+		"This is LibraryGo created by Radoslav Serstuk.",
 		"For help type '-help'",
 		"To search authors of the book type '-search <name of the book>'",
 		""}
+
 	for _, element := range introCli {
 		fmt.Printf("%s  \n", element)
 	}
@@ -77,6 +90,7 @@ func main() {
 			break
 		}
 		if helpinfo.MatchString(input) {
+
 			fmt.Println("Supported commands are -limit, -search, -help.")
 			fmt.Println("To reduce number of displayed works for every author write command -limit <number> i.e. -limit 10, default value is 200.")
 			fmt.Println("In command -search <book> , the book value is not case sensitive.")
@@ -90,11 +104,8 @@ func main() {
 		}
 
 	}
-	fmt.Println(input)
 
-	//search_query := "https://openlibrary.org/search.json?q=has_fulltext:true%20AND%20title:the%20lord%20of%20the%20rings&fields=key,author_key,author_name,availability&limit=1"
 	search_query := "https://openlibrary.org/search.json?q=has_fulltext:true%20AND%20title:" + input + "&fields=key,author_key,author_name,availability&limit=1"
-	fmt.Println(search_query)
 	response, err := http.Get(search_query)
 
 	if err != nil {
@@ -106,24 +117,26 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Println(string(responseData))
 
 	var worksSearch Docs
 	if err := json.Unmarshal(responseData, &worksSearch); err != nil {
 		log.Fatal(err)
 	}
 
-	/*fmt.Println("WORK ID", worksSearch.Results[0].Key)
-	for i, element := range worksSearch.Results[0].AuthorsKeys {
-		fmt.Print("namekey ", element)
-		fmt.Println(" name ", worksSearch.Results[0].AuthorsNames[i])
-	}*/
+	var nomatch ExactMatch
+	if err := json.Unmarshal(responseData, &nomatch); err != nil {
+		log.Fatal(err)
+	}
 
-	//var worksPerAuthor []string
-	//worksPerAuthor = worksbyauthors(worksSearch.Results[0])
+	if nomatch.ExctMtch == 0 {
+		fmt.Println("No match found")
+		os.Exit(1)
+	}
+
 	worksbyauthors(worksSearch.Results[0], limit)
 }
 
+// Struct for name of work and its revision number. Its substruct to struct "Works"
 type Entries struct {
 	Title     string `json:"title" yaml:"title"`
 	Revisions int    `json:"latest_revision" yaml:"revision"`
@@ -150,7 +163,6 @@ func worksbyauthors(dt KeysSearch, limit string) {
 
 	for i, element := range dt.AuthorsKeys {
 		http_query = "https://openlibrary.org/authors/" + element + "/works.json?limit=" + limit
-		//	fmt.Println("http_query :", http_query)
 		response, err := http.Get(http_query)
 
 		if err != nil {
@@ -162,7 +174,6 @@ func worksbyauthors(dt KeysSearch, limit string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		//	fmt.Println(string(responseData))
 
 		var wrkList Works
 		if err := json.Unmarshal(responseData, &wrkList); err != nil {
@@ -171,8 +182,6 @@ func worksbyauthors(dt KeysSearch, limit string) {
 
 		wrkList.Author = dt.AuthorsNames[i]
 
-		//fmt.Println("WRKL", wrkList.Results)
-
 		sort.SliceStable(wrkList.Results, func(i, j int) bool {
 			return wrkList.Results[i].Title < wrkList.Results[j].Title
 		})
@@ -180,24 +189,18 @@ func worksbyauthors(dt KeysSearch, limit string) {
 		sort.SliceStable(wrkList.Results, func(i, j int) bool {
 			return wrkList.Results[i].Revisions > wrkList.Results[j].Revisions
 		})
-		//fmt.Println("WRKLS", wrkList.Author, wrkList.Results)
 		allWorks = append(allWorks, wrkList)
 	}
-
-	//fmt.Println(allWorks)
 
 	sort.SliceStable(allWorks, func(i, j int) bool {
 		return allWorks[i].Author < allWorks[j].Author
 	})
-	//fmt.Println("SRT", allWorks)
-
 	yamlData, err := yaml.Marshal(&allWorks)
 
 	if err != nil {
 		fmt.Printf("Error while creating YAML. %v", err)
 	}
-	//fmt.Println(string(yamlData))
+
 	os.Stdout.Write(yamlData)
 
-	//fmt.Println("allWorks: ", allWorks)
 }
