@@ -26,12 +26,15 @@ Software is written in Go language. Data are gathered from openlibrary.org API.
 4. Type for example ```-search the lord of the rings``` to display additional works for every author contributing to searched book. 
 
 
-<br>
+---
+<p  align="center" >Welcome screen</p>
 <p align="center">
   <img src="https://github.com/serstuk93/librarygo/blob/master/preview/scr1.png" alt="screenshot" />
 </p>
 
-<br>
+
+---
+<p  align="center">Results</p>
 <p align="center">
   <img src="https://github.com/serstuk93/librarygo/blob/master/preview/scr2.png" alt="screenshot" />
 </p>
