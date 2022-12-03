@@ -8,6 +8,10 @@ Software is written in Go language. Data are gathered from openlibrary.org API.
 1. go 1.19
 2. gopkg.in/yaml.v3
 
+
+
+### Usage example
+
 * to run code in your IDE type 
   ```
   go run main.go
@@ -17,9 +21,6 @@ Software is written in Go language. Data are gathered from openlibrary.org API.
   ```
   go build
   ```
-
-### Usage example
-
 1. Run code ( see prequisities above)
 2. Type ```-help``` to show additional info
 3. Type ```-limit 10``` to limit results for every author to 10. Any positive number is accepted in range of int datatype.
