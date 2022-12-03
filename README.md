@@ -30,3 +30,9 @@ Software is written in Go language. Data are gathered from openlibrary.org API.
 <p align="center">
   <img src="https://github.com/serstuk93/librarygo/blob/master/preview/scr1.png" alt="screenshot" />
 </p>
+
+<br>
+<p align="center">
+  <img src="https://github.com/serstuk93/librarygo/blob/master/preview/scr2.png" alt="screenshot" />
+</p>
+
