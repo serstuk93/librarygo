@@ -1,13 +1,5 @@
 package main
 
-/* TASK:
-1. Create simple cli application for finding all works from authors of specific book
-2. Application has to find all authors for book and it will print list of all their works
-3. Create list of works for each author (name, revision)
-4. Print result to stdout in yaml format sorted by author name, count of revision (asc, desc as argument).
-Names of authors have to be part of output.
-*/
-
 /*for installation of yaml package:
 if you are in your default GOPATH then use "go mod init"
 else use "go mod init <name>"
@@ -97,11 +89,13 @@ func main() {
 			fmt.Println("Example of usage: -search the lord of the rings")
 			fmt.Println("Authors and book titles are ordered by ascending value, revision number is in descending order.")
 			fmt.Println("Results are shown in YAML.")
+			
 		}
 		if setlimit.MatchString(input) {
 			limit = strings.TrimSpace(input[7:])
 			fmt.Println("Setting new limit for works: ", limit)
 		}
+		fmt.Println("")
 
 	}
 
